@@ -4,3 +4,7 @@ __pycache__/
 *.swp
 *.swo
 *~
+
+# Seed data — large generated files, not committed
+data/seed/
+graphify-out/
