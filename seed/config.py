@@ -20,7 +20,7 @@ if not USER_AGENT:
         "  export EDGAR_EMAIL='user@example.com'"
     )
 
-MAX_REQUESTS_PER_SECOND = 8  # stay under SEC's 10/sec hard limit
+MAX_REQUESTS_PER_SECOND = 5  # conservative — SEC enforces 10/sec but throttles aggressively
 
 # ---------------------------------------------------------------------------
 # Output directories — all under data/seed/, ignored from Git.

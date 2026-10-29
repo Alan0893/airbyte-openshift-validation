@@ -46,22 +46,42 @@ class EdgarClient:
             time.sleep(self._min_interval - elapsed)
         self._last_request_time = time.monotonic()
 
-    def get(self, url: str, **kwargs) -> requests.Response:
-        """Rate-limited GET with retry on 429."""
+    def get(self, url: str, _retries: int = 3, **kwargs) -> requests.Response:
+        """Rate-limited GET with retry on 429, 5xx, and connection errors."""
         self._throttle()
-        resp = self.session.get(url, timeout=30, **kwargs)
 
-        if resp.status_code == 429:
-            retry_after = int(resp.headers.get("Retry-After", 10))
-            logger.warning("Rate limited (429), sleeping %ds", retry_after)
-            time.sleep(retry_after)
-            return self.get(url, **kwargs)
+        for attempt in range(1, _retries + 1):
+            try:
+                resp = self.session.get(url, timeout=30, **kwargs)
+            except (requests.ConnectionError, requests.Timeout) as e:
+                if attempt < _retries:
+                    wait = 10 * attempt
+                    logger.warning("Connection error (attempt %d/%d), sleeping %ds: %s",
+                                   attempt, _retries, wait, e)
+                    time.sleep(wait)
+                    continue
+                raise
 
-        if resp.status_code == 403:
-            raise RuntimeError(
-                f"SEC rejected request (403). Check User-Agent in config.py. "
-                f"Current: {config.USER_AGENT!r}"
-            )
+            if resp.status_code == 429:
+                retry_after = int(resp.headers.get("Retry-After", 15))
+                logger.warning("Rate limited (429), sleeping %ds", retry_after)
+                time.sleep(retry_after)
+                continue
+
+            if resp.status_code >= 500 and attempt < _retries:
+                wait = 10 * attempt
+                logger.warning("Server error (%d), sleeping %ds", resp.status_code, wait)
+                time.sleep(wait)
+                continue
+
+            if resp.status_code == 403:
+                raise RuntimeError(
+                    f"SEC rejected request (403). Check User-Agent in config.py. "
+                    f"Current: {config.USER_AGENT!r}"
+                )
+
+            resp.raise_for_status()
+            return resp
 
         resp.raise_for_status()
         return resp
