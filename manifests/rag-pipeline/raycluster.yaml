@@ -3,15 +3,15 @@
 # Requires: KubeRay operator installed via RHOAI or standalone
 #
 # Seed corpus is read from S3 (see edgar-seed-s3 Secret). Pipeline code and
-# dependencies ship in the custom Ray image — replace IMAGE below with an
-# immutable tag or digest before applying.
+# dependencies ship in the custom Ray image (pinned by digest below).
+#
+# Private Quay: create a docker-registry Secret named quay-pull before apply.
+# Public Quay: remove imagePullSecrets from the pod templates.
 #
 # Validation sizing (2 workers × 2 CPU = 4 worker CPUs):
 #   Docling: 2 actors × 1 CPU = 2 CPUs
 #   Embed:   1 actor  × 2 CPU = 2 CPUs
 #   Milvus:  1 actor  × 1 CPU = 1 CPU
-#
-# IMAGE: quay.io/<org>/edgar-rag-ray:<immutable-tag-or-digest>
 apiVersion: ray.io/v1
 kind: RayCluster
 metadata:
@@ -31,12 +31,13 @@ spec:
         labels:
           app: edgar-rag-head
       spec:
+        imagePullSecrets:
+          - name: quay-pull
         securityContext:
           runAsNonRoot: true
         containers:
           - name: ray-head
-            # Replace with your immutable image tag or digest before apply.
-            image: quay.io/EXAMPLE/edgar-rag-ray:0.1.0
+            image: quay.io/rh-ee-alalin/edgar-rag-ray@sha256:2e5e4886bf80f0a267714233c94c88116230e51b0f7de4d002c345dfce0e92bf
             ports:
               - containerPort: 6379
                 name: gcs
@@ -79,12 +80,13 @@ spec:
           labels:
             app: edgar-rag-worker
         spec:
+          imagePullSecrets:
+            - name: quay-pull
           securityContext:
             runAsNonRoot: true
           containers:
             - name: ray-worker
-              # Replace with your immutable image tag or digest before apply.
-              image: quay.io/EXAMPLE/edgar-rag-ray:0.1.0
+              image: quay.io/rh-ee-alalin/edgar-rag-ray@sha256:2e5e4886bf80f0a267714233c94c88116230e51b0f7de4d002c345dfce0e92bf
               resources:
                 requests:
                   cpu: "2"

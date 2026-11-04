@@ -1,11 +1,10 @@
 # Deploy order (S3-backed seed; no RWX PVC):
-#   1. Build/push the Ray image (pipeline/Dockerfile) with an immutable tag/digest
-#   2. Replace quay.io/EXAMPLE/edgar-rag-ray:0.1.0 in raycluster.yaml + rayjob
-#   3. Create milvus-s3-config and edgar-seed-s3 Secrets
-#   4. Upload edgar-seed/ layout to the seed bucket
-#   5. oc apply -k manifests/rag-pipeline/
-#   6. Wait for Milvus + RayCluster readiness
-#   7. oc apply -f manifests/rag-pipeline/rayjob-edgar-pipeline.yaml
+#   1. Build/push the Ray image (pipeline/Dockerfile); pin digest in ray*.yaml
+#   2. Create quay-pull (private Quay), milvus-s3-config, and edgar-seed-s3 Secrets
+#   3. Upload edgar-seed/ layout to the seed bucket; run smoke_s3_input
+#   4. oc apply -k manifests/rag-pipeline/
+#   5. Wait for Milvus + RayCluster readiness
+#   6. oc apply -f manifests/rag-pipeline/rayjob-edgar-pipeline.yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
