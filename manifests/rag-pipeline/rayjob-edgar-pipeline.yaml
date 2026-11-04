@@ -29,12 +29,13 @@ spec:
       labels:
         app: edgar-rag-submitter
     spec:
+      imagePullSecrets:
+        - name: quay-pull
       securityContext:
         runAsNonRoot: true
       containers:
         - name: ray-job-submitter
-          # Replace with your immutable image tag or digest before apply.
-          image: quay.io/EXAMPLE/edgar-rag-ray:0.1.0
+          image: quay.io/rh-ee-alalin/edgar-rag-ray@sha256:2e5e4886bf80f0a267714233c94c88116230e51b0f7de4d002c345dfce0e92bf
           env:
             - name: INPUT_SOURCE
               value: s3

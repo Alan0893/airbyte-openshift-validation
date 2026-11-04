@@ -16,15 +16,26 @@
 FROM rayproject/ray:2.54.0-py311
 
 USER root
-RUN mkdir -p /opt/edgar-rag && chown -R ray:ray /opt/edgar-rag
+# The Ray base image provides the `ray` user but not a `ray` group.  Keep the
+# application tree readable/writable for the image user and OpenShift's
+# arbitrary-UID runtime group.
+RUN mkdir -p /opt/edgar-rag \
+    && chown -R ray:0 /opt/edgar-rag \
+    && chmod -R g=u /opt/edgar-rag
 USER ray
 
 WORKDIR /opt/edgar-rag
 
-COPY --chown=ray:ray pipeline/requirements.txt /opt/edgar-rag/pipeline/requirements.txt
-RUN pip install --no-cache-dir -r /opt/edgar-rag/pipeline/requirements.txt
+COPY --chown=ray:0 pipeline/requirements.txt /opt/edgar-rag/pipeline/requirements.txt
 
-COPY --chown=ray:ray pipeline/ /opt/edgar-rag/pipeline/
+# Install CPU PyTorch first so Docling and sentence-transformers do not pull
+# the much larger CUDA wheel set into this CPU Ray image.
+RUN pip install --no-cache-dir \
+      --index-url https://download.pytorch.org/whl/cpu \
+      torch torchvision \
+    && pip install --no-cache-dir -r /opt/edgar-rag/pipeline/requirements.txt
+
+COPY --chown=ray:0 pipeline/ /opt/edgar-rag/pipeline/
 
 ENV PYTHONPATH=/opt/edgar-rag
 WORKDIR /opt/edgar-rag
