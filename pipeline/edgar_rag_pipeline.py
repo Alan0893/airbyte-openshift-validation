@@ -594,6 +594,14 @@ def run_pipeline(records: List[Dict[str, str]]) -> Dict[str, Any]:
     }
 
 
+def _json_default(value: Any):
+    """Convert scalar types from NumPy/PyArrow metrics to JSON values."""
+    item = getattr(value, "item", None)
+    if callable(item):
+        return item()
+    raise TypeError(f"Object of type {type(value).__name__} is not JSON serializable")
+
+
 def print_report(metrics: Dict[str, Any]):
     """Print pipeline results."""
     print("\n" + "=" * 60)
@@ -607,7 +615,7 @@ def print_report(metrics: Dict[str, Any]):
     print(f"Embedding:       {metrics['embedding_model']} (dim={metrics['embedding_dim']})")
     print(f"Milvus:          {metrics['collection']}")
     print("=" * 60)
-    print(f"\nMETRICS_JSON={json.dumps(metrics)}")
+    print(f"\nMETRICS_JSON={json.dumps(metrics, default=_json_default)}")
 
 
 def run():

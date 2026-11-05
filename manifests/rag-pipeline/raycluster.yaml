@@ -8,8 +8,9 @@
 # Private Quay: create a docker-registry Secret named quay-pull before apply.
 # Public Quay: remove imagePullSecrets from the pod templates.
 #
-# Validation sizing (2 workers × 2 CPU = 4 worker CPUs):
-#   Docling: 2 actors × 1 CPU = 2 CPUs
+# Validation sizing (head 1 CPU + 2 workers × 2 CPU = 5 CPUs):
+#   Head:    1 CPU for the small validation workload
+#   Docling: 1 actor  × 1 CPU = 1 CPU
 #   Embed:   1 actor  × 2 CPU = 2 CPUs
 #   Milvus:  1 actor  × 1 CPU = 1 CPU
 apiVersion: ray.io/v1
@@ -25,7 +26,7 @@ spec:
     serviceType: ClusterIP
     rayStartParams:
       dashboard-host: "0.0.0.0"
-      num-cpus: "0"
+      num-cpus: "1"
     template:
       metadata:
         labels:
@@ -37,7 +38,7 @@ spec:
           runAsNonRoot: true
         containers:
           - name: ray-head
-            image: quay.io/rh-ee-alalin/edgar-rag-ray@sha256:2e5e4886bf80f0a267714233c94c88116230e51b0f7de4d002c345dfce0e92bf
+            image: quay.io/rh-ee-alalin/edgar-rag-ray@sha256:c9036bd36b4f3ad5d3e8b229de6d7bde4c05739706cca469667e0293f9bac7dc
             ports:
               - containerPort: 6379
                 name: gcs
@@ -86,7 +87,7 @@ spec:
             runAsNonRoot: true
           containers:
             - name: ray-worker
-              image: quay.io/rh-ee-alalin/edgar-rag-ray@sha256:2e5e4886bf80f0a267714233c94c88116230e51b0f7de4d002c345dfce0e92bf
+              image: quay.io/rh-ee-alalin/edgar-rag-ray@sha256:c9036bd36b4f3ad5d3e8b229de6d7bde4c05739706cca469667e0293f9bac7dc
               resources:
                 requests:
                   cpu: "2"

@@ -35,7 +35,7 @@ spec:
         runAsNonRoot: true
       containers:
         - name: ray-job-submitter
-          image: quay.io/rh-ee-alalin/edgar-rag-ray@sha256:2e5e4886bf80f0a267714233c94c88116230e51b0f7de4d002c345dfce0e92bf
+          image: quay.io/rh-ee-alalin/edgar-rag-ray@sha256:c9036bd36b4f3ad5d3e8b229de6d7bde4c05739706cca469667e0293f9bac7dc
           env:
             - name: INPUT_SOURCE
               value: s3
@@ -64,8 +64,10 @@ spec:
       PROCESS_LEGAL: "true"
       PROCESS_COMPLIANCE: "true"
       PROCESS_FACTSHEETS: "true"
-      NUM_DOCLING_ACTORS: "2"
+      NUM_DOCLING_ACTORS: "1"
       CPUS_PER_DOCLING_ACTOR: "1"
+      DOCLING_BATCH_SIZE: "1"
+      CHUNK_MAX_TOKENS: "1024"
       NUM_EMBED_ACTORS: "1"
       NUM_MILVUS_ACTORS: "1"
       EMBEDDING_MODEL: sentence-transformers/all-MiniLM-L6-v2
@@ -74,6 +76,5 @@ spec:
   entrypoint: python -m pipeline.edgar_rag_pipeline
 
   shutdownAfterJobFinishes: false
-  ttlSecondsAfterFinished: 3600
 
   activeDeadlineSeconds: 7200
