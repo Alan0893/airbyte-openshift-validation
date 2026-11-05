@@ -26,6 +26,20 @@ spec:
     requests:
       storage: 10Gi
 ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: milvus-etcd-data
+  labels:
+    app: milvus-etcd
+    app.kubernetes.io/part-of: edgar-rag-pipeline
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
 # etcd for Milvus metadata
 apiVersion: apps/v1
 kind: Deployment
@@ -59,11 +73,9 @@ spec:
             - --max-request-bytes=33554432
           ports:
             - containerPort: 2379
-          env:
-            - name: ETCD_AUTO_COMPACTION_MODE
-              value: revision
-            - name: ETCD_AUTO_COMPACTION_RETENTION
-              value: "1000"
+          volumeMounts:
+            - name: etcd-data
+              mountPath: /etcd-data
           resources:
             requests:
               cpu: 100m
@@ -77,6 +89,10 @@ spec:
               drop: ["ALL"]
             seccompProfile:
               type: RuntimeDefault
+      volumes:
+        - name: etcd-data
+          persistentVolumeClaim:
+            claimName: milvus-etcd-data
 ---
 apiVersion: v1
 kind: Service
