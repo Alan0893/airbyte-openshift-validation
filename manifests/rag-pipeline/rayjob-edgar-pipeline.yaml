@@ -35,7 +35,7 @@ spec:
         runAsNonRoot: true
       containers:
         - name: ray-job-submitter
-          image: quay.io/rh-ee-alalin/edgar-rag-ray@sha256:c9036bd36b4f3ad5d3e8b229de6d7bde4c05739706cca469667e0293f9bac7dc
+          image: quay.io/rh-ee-alalin/edgar-rag-ray@sha256:cad2a19f0fff165ec8d31d62f33603807692125e10d582647f4cc5299ee1d34b
           env:
             - name: INPUT_SOURCE
               value: s3
