@@ -500,10 +500,8 @@ def setup_milvus_collection():
             logger.info("Dropping existing collection '%s'", COLLECTION_NAME)
             client.drop_collection(COLLECTION_NAME)
         else:
-            raise RuntimeError(
-                f"Collection '{COLLECTION_NAME}' already exists. "
-                f"Set DROP_EXISTING_COLLECTION=true to recreate."
-            )
+            logger.info("Using existing collection '%s' for append", COLLECTION_NAME)
+            return
 
     schema = CollectionSchema(
         fields=[

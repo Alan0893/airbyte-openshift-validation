@@ -46,7 +46,7 @@ GDRIVE_LEGAL_NAME="${GDRIVE_LEGAL_NAME:-RAG - Google Drive - Legal}"
 GDRIVE_COMPLIANCE_NAME="${GDRIVE_COMPLIANCE_NAME:-RAG - Google Drive - Compliance}"
 S3_SOURCE_NAME="${S3_SOURCE_NAME:-RAG - S3 - Financial Statements}"
 POSTGRES_SOURCE_NAME="${POSTGRES_SOURCE_NAME:-RAG - PostgreSQL - SEC Data}"
-S3_DESTINATION_NAME="${S3_DESTINATION_NAME:-RAG - S3 Landing Zone}"
+S3_DESTINATION_NAME="${S3_DESTINATION_NAME:-RAG - S3 Landing}"
 POSTGRES_DESTINATION_NAME="${POSTGRES_DESTINATION_NAME:-RAG - PostgreSQL Landing}"
 
 # JSON config files. Set these to files outside the repository.
@@ -349,38 +349,32 @@ create_or_reuse_destination() {
 }
 
 create_or_reuse_connection() {
-  local name="$1" source_id="$2" destination_id="$3"
+  local name="$1" source_id="$2" destination_id="$3" include_files="${4:-false}" stream_names="${5:-}"
   local existing result connection_id detail streams
-
-  info "Discovering streams for: ${name}"
-  streams="$(discover_streams "${source_id}" "${destination_id}")"
 
   existing="$(api_get "/connections?workspaceIds=${WORKSPACE_ID}&limit=100")"
   connection_id="$(jq -r --arg name "${name}" '.data[] | select(.name == $name) | .connectionId' <<<"${existing}" | head -n1)"
   if [[ -n "${connection_id}" ]]; then
     detail="$(api_get "/connections/${connection_id}")"
-    if [[ "$(jq '(.configurations.streams // []) | length' <<<"${detail}")" -eq 0 ]]; then
-      if [[ "$(jq 'length' <<<"${streams}")" -gt 0 ]]; then
-        result="$(jq -n --argjson streams "${streams}" '{configurations: {streams: $streams}}')"
-        api_patch "/connections/${connection_id}" "${result}" >/dev/null
-        success "Updated existing connection streams: ${name} (${connection_id})"
-      else
-        success "Connection already exists; Airbyte will use its default all-streams catalog: ${name} (${connection_id})"
-      fi
-    else
+    if [[ "$(jq '(.configurations.streams // []) | length' <<<"${detail}")" -gt 0 ]]; then
       success "Connection already exists: ${name} (${connection_id})"
+      return 0
     fi
+  fi
+
+  info "Discovering streams for: ${name}"
+  streams="$(discover_streams "${source_id}" "${destination_id}" "${include_files}" "${stream_names}")"
+
+  if [[ -n "${connection_id}" ]]; then
+    result="$(jq -n --argjson streams "${streams}" '{configurations: {streams: $streams}}')"
+    api_patch "/connections/${connection_id}" "${result}" >/dev/null
+    success "Updated existing connection streams: ${name} (${connection_id})"
     return 0
   fi
 
-  if [[ "$(jq 'length' <<<"${streams}")" -gt 0 ]]; then
-    result="$(jq -n --arg name "${name}" --arg source_id "${source_id}" --arg destination_id "${destination_id}" \
-      --argjson streams "${streams}" \
-      '{name: $name, sourceId: $source_id, destinationId: $destination_id, schedule: {scheduleType: "manual"}, status: "active", namespaceDefinition: "destination", configurations: {streams: $streams}}')"
-  else
-    result="$(jq -n --arg name "${name}" --arg source_id "${source_id}" --arg destination_id "${destination_id}" \
-      '{name: $name, sourceId: $source_id, destinationId: $destination_id, schedule: {scheduleType: "manual"}, status: "active", namespaceDefinition: "destination"}')"
-  fi
+  result="$(jq -n --arg name "${name}" --arg source_id "${source_id}" --arg destination_id "${destination_id}" \
+    --argjson streams "${streams}" \
+    '{name: $name, sourceId: $source_id, destinationId: $destination_id, schedule: {scheduleType: "manual"}, status: "active", namespaceDefinition: "destination", configurations: {streams: $streams}}')"
   result="$(api_post /connections "${result}")"
   connection_id="$(jq -r '.connectionId // empty' <<<"${result}")"
   if [[ -z "${connection_id}" ]]; then
@@ -392,25 +386,65 @@ create_or_reuse_connection() {
 }
 
 discover_streams() {
-  local source_id="$1" destination_id="$2"
-  local result streams count
+  local source_id="$1" destination_id="$2" include_files="${3:-false}" stream_names="${4:-}"
+  local result streams count expected_count attempt
 
-  # Public API V1 exposes compatible stream properties through /streams.
-  # Fall back to the older discover route for older Airbyte builds.
-  if result="$(api_get "/streams?sourceId=${source_id}&destinationId=${destination_id}&ignoreCache=true")"; then
-    streams="$(jq -c '[.streams[]?, .data[]? | select(.name != null) | {name: .name, syncMode: "full_refresh_overwrite"}]' <<<"${result}")"
+  # Discovery may outlast the Route timeout while its pod is still healthy.
+  # Trigger it once, then poll Airbyte's cached catalog.
+  if ! result="$(api_get "/streams?sourceId=${source_id}&destinationId=${destination_id}&ignoreCache=true" 2>/dev/null)"; then
+    for attempt in {1..24}; do
+      sleep 5
+      if result="$(api_get "/streams?sourceId=${source_id}&destinationId=${destination_id}&ignoreCache=false" 2>/dev/null)"; then
+        break
+      fi
+    done
+  fi
+
+  if [[ -n "${result:-}" ]]; then
+    # Public API V1 returns an array with streamName and propertyFields.
+    # Older builds wrap the array in streams or data.
+    streams="$(jq -c --argjson include_files "${include_files}" '
+      (if type == "array" then . else (.streams // .data // []) end)
+      | [.[] | select((.streamName // .name) != null)
+        | {
+            name: (.streamName // .name),
+            syncMode: (if ((.syncModes // []) | index("full_refresh_overwrite")) != null
+                       then "full_refresh_overwrite" else (.syncModes[0] // "full_refresh_overwrite") end),
+            selectedFields: [(.propertyFields // [])[] | {fieldPath: .}],
+            includeFiles: $include_files
+          }
+          + (if (.streamnamespace // .namespace) != null
+             then {namespace: (.streamnamespace // .namespace)} else {} end)
+          + (if .sourceDefinedPrimaryKey != null
+             then {primaryKey: .sourceDefinedPrimaryKey} else {} end)
+      ]' <<<"${result}")"
   elif result="$(api_post "/sources/${source_id}/discover" "{}")"; then
-    streams="$(jq -c '[.catalog.streams[]?.stream? | select(.name != null) | {name: .name, syncMode: "full_refresh_overwrite"}]' <<<"${result}")"
+    streams="$(jq -c --argjson include_files "${include_files}" '
+      [.catalog.streams[]?.stream? | select(.name != null)
+        | {name: .name, syncMode: "full_refresh_overwrite", includeFiles: $include_files,
+           selectedFields: [(.json_schema.properties // .jsonSchema.properties // {}) | keys[] | {fieldPath: [.] }]}
+      ]' <<<"${result}")"
   else
-    warn "Stream discovery endpoints are unavailable; Airbyte will apply its default all-streams catalog"
-    streams='[]'
+    error "Stream discovery failed for source ${source_id}"
+    return 1
+  fi
+
+  if [[ -n "${stream_names}" ]]; then
+    streams="$(jq -c --arg names "${stream_names}" '
+      ($names | split(",")) as $allowed
+      | [.[] | . as $stream | select(($allowed | index($stream.name)) != null)]
+    ' <<<"${streams}")"
+    expected_count="$(jq -nc --arg names "${stream_names}" '$names | split(",") | length')"
   fi
 
   count="$(jq 'length' <<<"${streams}")"
+  if [[ -n "${stream_names}" && "${count}" -ne "${expected_count}" ]]; then
+    error "Expected streams ${stream_names}, but discovered only ${count} matching stream(s)"
+    return 1
+  fi
   if [[ "${count}" -eq 0 ]]; then
-    warn "No explicit streams discovered for source ${source_id}; leaving configurations.streams unset"
-    printf '%s\n' "${streams}"
-    return 0
+    error "No streams discovered for source ${source_id}"
+    return 1
   fi
   success "Discovered ${count} stream(s)" >&2
   printf '%s\n' "${streams}"
@@ -448,10 +482,10 @@ main() {
   s3_destination_id="$(create_or_reuse_destination "${S3_DESTINATION_NAME}" "${S3_DESTINATION_DEF_ID}" "${S3_DESTINATION_CONFIG_FILE}" S3_DESTINATION_CONFIG_FILE)"
   postgres_destination_id="$(create_or_reuse_destination "${POSTGRES_DESTINATION_NAME}" "${POSTGRES_DESTINATION_DEF_ID}" "${POSTGRES_DESTINATION_CONFIG_FILE}" POSTGRES_DESTINATION_CONFIG_FILE)"
 
-  create_or_reuse_connection "RAG - Legal to S3" "${gdrive_legal_id}" "${s3_destination_id}"
-  create_or_reuse_connection "RAG - Compliance to S3" "${gdrive_compliance_id}" "${s3_destination_id}"
-  create_or_reuse_connection "RAG - Financial Statements to S3" "${s3_source_id}" "${s3_destination_id}"
-  create_or_reuse_connection "RAG - SEC PostgreSQL to PostgreSQL" "${postgres_source_id}" "${postgres_destination_id}"
+  create_or_reuse_connection "RAG - Google Drive - Legal → RAG - S3 Landing" "${gdrive_legal_id}" "${s3_destination_id}" true
+  create_or_reuse_connection "RAG - Google Drive - Compliance → RAG - S3 Landing" "${gdrive_compliance_id}" "${s3_destination_id}" true
+  create_or_reuse_connection "RAG - Financial Statements to S3" "${s3_source_id}" "${s3_destination_id}" true
+  create_or_reuse_connection "RAG - SEC PostgreSQL to PostgreSQL" "${postgres_source_id}" "${postgres_destination_id}" false "sub,num"
 
   success "RAG connector configuration is complete"
   info "Connections are manual by default; trigger syncs from the Airbyte UI or API after validating each connector."

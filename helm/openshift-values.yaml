@@ -66,13 +66,13 @@ global:
     type: s3
     secretName: airbyte-config-secrets
     bucket:
-      log: airbyte-rag
-      state: airbyte-rag
-      workloadOutput: airbyte-rag
+      log: ai-dev02-bucket01-data
+      state: ai-dev02-bucket01-data
+      workloadOutput: ai-dev02-bucket01-data
     s3:
       # Set this for ODF or another S3-compatible endpoint. Leave empty for AWS S3.
       endpoint: ""
-      region: ""
+      region: us-east-1
       authenticationType: credentials
       accessKeyIdSecretKey: s3-access-key-id
       secretAccessKeySecretKey: s3-secret-access-key
@@ -89,8 +89,9 @@ global:
           request: "250m"
           limit: "500m"
         memory:
-          request: "256Mi"
-          limit: "512Mi"
+          # Full financial file sync exceeded 512Mi in the source container.
+          request: "512Mi"
+          limit: "2Gi"
       replication:
         cpu:
           request: "250m"
@@ -103,22 +104,22 @@ global:
           request: "100m"
           limit: "250m"
         memory:
-          request: "128Mi"
-          limit: "256Mi"
+          request: "256Mi"
+          limit: "1Gi"
       discover:
         cpu:
           request: "100m"
           limit: "250m"
         memory:
-          request: "128Mi"
-          limit: "256Mi"
+          request: "256Mi"
+          limit: "1Gi"
       sidecar:
         cpu:
           request: "100m"
           limit: "250m"
         memory:
-          request: "128Mi"
-          limit: "256Mi"
+          request: "256Mi"
+          limit: "1Gi"
 
   # -- Java opts applied globally to JVM-based services
   java:
@@ -275,6 +276,12 @@ workloadLauncher:
 workloadApiServer:
   enabled: true
   replicaCount: 1
+
+  # This deployment historically had literal 512Mi job limits in its pod
+  # template. Render these explicitly so they match global.workloads.resources.
+  env_vars:
+    JOB_MAIN_CONTAINER_MEMORY_REQUEST: "512Mi"
+    JOB_MAIN_CONTAINER_MEMORY_LIMIT: "2Gi"
 
   podSecurityContext:
     fsGroup: 1000

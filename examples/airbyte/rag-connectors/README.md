@@ -12,11 +12,40 @@ The script creates four sources and two destinations:
 - S3 `financial-statements/` → shared S3-compatible landing zone
 - PostgreSQL SEC data → PostgreSQL landing destination
 
-The S3 source template intentionally targets extracted `.tsv` files and
-parses them as tab-delimited CSV. The seed corpus is distributed as ZIP
-archives, so extract the archives into the source bucket first (or change the
-template to match the actual extracted `.csv`/`.tsv` paths). Do not point the
-CSV stream at `.zip` objects.
+The S3 source copies extracted SEC tables as raw TSV files. Extract `sub.txt`,
+`num.txt`, `pre.txt`, and `tag.txt` from each archive in
+`data/seed/s3/financial-statements/`, and upload them as
+`financial-statements/<quarter>/<table>.tsv`. The TSV glob stays separate
+from `airbyte/landing/` in the same bucket. The installed S3 connector
+requires a `format` field even with raw file transfer; the `csv` value in
+this template is ignored in that mode. Airbyte copies the TSV bytes without
+parsing them. For row-level validation, use separate record streams for each
+table type because their columns differ. Do not point a TSV stream at the ZIP
+objects: the connector expands ZIP members during listing, so a `*.zip` glob
+does not select the archives for raw file transfer.
+The expected 32 TSV keys, sizes, and SHA-256 hashes are recorded in
+`docs/evidence/financial-tsv-sha256.json` for source and landing reconciliation.
+Stage the files from the repo root with standard AWS environment credentials:
+
+```bash
+python -m pip install -r seed/requirements.txt
+export S3_BUCKET=YOUR_BUCKET
+# Set S3_ENDPOINT only for an S3-compatible service outside AWS.
+python scripts/08-stage-financial-tsv.py
+```
+
+The staging script streams ZIP members without expanding them onto local
+disk, skips objects whose size and recorded SHA-256 already match, and writes
+the manifest above. Use `--manifest-only` to regenerate the manifest without
+contacting S3.
+
+The full 32-file transfer exceeded the default 512 MiB connector limit.
+`helm/openshift-values.yaml` raises the main container to a 512 MiB request
+and 2 GiB limit. After applying changed Helm values, restart Airbyte's
+`worker`, `workload-api-server`, `server`, and `workload-launcher` deployments.
+Their pods can keep the old `JOB_MAIN_CONTAINER_MEMORY_*` environment values
+even when the ConfigMap has updated. Verify the values in the running pods and
+the resource limits in a new replication pod before the full transfer.
 
 The source and destination definition IDs are configurable because the
 self-managed Airbyte catalog can vary by version. The Google Drive and S3 IDs
@@ -52,6 +81,13 @@ Before running the script, deploy and seed the PostgreSQL source, or edit
 uses the Phase 1 service name and `sample_data` database as safe placeholders;
 it does not contain the SUB/NUM corpus. The database and required tables must
 exist before stream discovery and the first sync.
+
+The PostgreSQL connection selects only `public.sub` and `public.num` from the
+discovered catalog. Other tables in `sample_data` stay out of this landing
+schema.
+If you already generated `financial_seed.sql`, regenerate it with the current
+`seed/financial_data.py` before loading. Older copies inserted `NULL` into
+the serial `num.id` column and fail as one transaction.
 
 The script is idempotent by resource name. Existing resources are reused; the
 script does not overwrite their credentials. Update an existing connector in
