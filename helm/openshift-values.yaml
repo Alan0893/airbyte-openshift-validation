@@ -66,13 +66,13 @@ global:
     type: s3
     secretName: airbyte-config-secrets
     bucket:
-      log: airbyte-rag
-      state: airbyte-rag
-      workloadOutput: airbyte-rag
+      log: ai-dev02-bucket01-data
+      state: ai-dev02-bucket01-data
+      workloadOutput: ai-dev02-bucket01-data
     s3:
       # Set this for ODF or another S3-compatible endpoint. Leave empty for AWS S3.
       endpoint: ""
-      region: ""
+      region: us-east-1
       authenticationType: credentials
       accessKeyIdSecretKey: s3-access-key-id
       secretAccessKeySecretKey: s3-secret-access-key
@@ -103,22 +103,22 @@ global:
           request: "100m"
           limit: "250m"
         memory:
-          request: "128Mi"
-          limit: "256Mi"
+          request: "256Mi"
+          limit: "1Gi"
       discover:
         cpu:
           request: "100m"
           limit: "250m"
         memory:
-          request: "128Mi"
-          limit: "256Mi"
+          request: "256Mi"
+          limit: "1Gi"
       sidecar:
         cpu:
           request: "100m"
           limit: "250m"
         memory:
-          request: "128Mi"
-          limit: "256Mi"
+          request: "256Mi"
+          limit: "1Gi"
 
   # -- Java opts applied globally to JVM-based services
   java:
