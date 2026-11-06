@@ -1,0 +1,167 @@
+{
+  "source_prefix": "financial-statements/",
+  "file_count": 32,
+  "total_bytes": 4879024265,
+  "objects": [
+    {
+      "key": "financial-statements/2023q1/sub.tsv",
+      "size_bytes": 2037632,
+      "sha256": "cdac82dc4c6cb6ed63b37eabbab49f5c7b7f58e3e0f7495d0280684adbce510c"
+    },
+    {
+      "key": "financial-statements/2023q1/num.tsv",
+      "size_bytes": 469616751,
+      "sha256": "0751898bc31acb5309660f2acc1a4e692d98ee7a0e2f21e269570ce7758e3c76"
+    },
+    {
+      "key": "financial-statements/2023q1/pre.tsv",
+      "size_bytes": 99205549,
+      "sha256": "541a9a9534b788ea7dc25be1391ebee307756213ed6a7146bb796089887b3435"
+    },
+    {
+      "key": "financial-statements/2023q1/tag.tsv",
+      "size_bytes": 21971266,
+      "sha256": "e97068a9fdb992039d3e5614767305697871cdfe981ad92188195a74414e548f"
+    },
+    {
+      "key": "financial-statements/2023q2/sub.tsv",
+      "size_bytes": 2446972,
+      "sha256": "ce8187645c8e6ddcd0fe3acad5a9c4f04df1937dd18b40679f02a5a8a2354a54"
+    },
+    {
+      "key": "financial-statements/2023q2/num.tsv",
+      "size_bytes": 468696729,
+      "sha256": "72b948228b2d692e8e36353e8c02c9a7845fa5ddbc7d644b8f7b4661db05d4ba"
+    },
+    {
+      "key": "financial-statements/2023q2/pre.tsv",
+      "size_bytes": 105508836,
+      "sha256": "d6fc65a2169a70094b973594f501362309da0d9fc9045e865f8d6d85d4a01869"
+    },
+    {
+      "key": "financial-statements/2023q2/tag.tsv",
+      "size_bytes": 22242072,
+      "sha256": "654cf9412b31ec5ddcfb4ab7380c6733ab87b9214c6f932f77f7093810ce40f3"
+    },
+    {
+      "key": "financial-statements/2023q3/sub.tsv",
+      "size_bytes": 2132903,
+      "sha256": "39018609468f6ff75d3f79c29bec8b8af266d77b53b9adade9a45365b6909021"
+    },
+    {
+      "key": "financial-statements/2023q3/num.tsv",
+      "size_bytes": 494235258,
+      "sha256": "ebc8e2b055f893e56a4ce431ee16ef314d6be7c891e3791ae31afcaec635ba0c"
+    },
+    {
+      "key": "financial-statements/2023q3/pre.tsv",
+      "size_bytes": 94397997,
+      "sha256": "ba09494c854bedddfef1831572570e8498b4be9791fcfe0cecabc937ef4a6eb7"
+    },
+    {
+      "key": "financial-statements/2023q3/tag.tsv",
+      "size_bytes": 18722073,
+      "sha256": "416c380515dffe89719a0e480a9092fec5eaf411a29448a2c3a4d894cd821ffb"
+    },
+    {
+      "key": "financial-statements/2023q4/sub.tsv",
+      "size_bytes": 2077229,
+      "sha256": "b8124ce83f4f595f0de85c955716a9d683f5e843f8ff14ce2633b2d0079412b7"
+    },
+    {
+      "key": "financial-statements/2023q4/num.tsv",
+      "size_bytes": 514279438,
+      "sha256": "ce19433be028718a39a41225bc63b58bfbd7fe2712d88de9381647ec6f26cf66"
+    },
+    {
+      "key": "financial-statements/2023q4/pre.tsv",
+      "size_bytes": 94054709,
+      "sha256": "cf848d4ae3bb814396b4cd170fd931fc5285b87f1cb995e5a4c692ca9308f589"
+    },
+    {
+      "key": "financial-statements/2023q4/tag.tsv",
+      "size_bytes": 18410530,
+      "sha256": "fbc21614ba679c60ff10e693bd3f53126eb53623f11f45ea7e9339cee3d52519"
+    },
+    {
+      "key": "financial-statements/2024q1/sub.tsv",
+      "size_bytes": 1811493,
+      "sha256": "4a69e3aa0e42cac4056238f17c260ccb1a35b53cd67c76776c2581818fbfbb66"
+    },
+    {
+      "key": "financial-statements/2024q1/num.tsv",
+      "size_bytes": 486746093,
+      "sha256": "fa79b3f471537bb6da60c84c7c42c9135dd89d7a2aed15ce27d125ae2348282a"
+    },
+    {
+      "key": "financial-statements/2024q1/pre.tsv",
+      "size_bytes": 89661069,
+      "sha256": "ae86c1ae8f8ef103f03ed3616b72ce7a1d2bdbeabd3d604716e30f157e3cf4c3"
+    },
+    {
+      "key": "financial-statements/2024q1/tag.tsv",
+      "size_bytes": 18619448,
+      "sha256": "7f6e2235f9d6c5dd6e27da1d3983948f000f877272e2b25b665bad03f516457a"
+    },
+    {
+      "key": "financial-statements/2024q2/sub.tsv",
+      "size_bytes": 2330878,
+      "sha256": "b40357b0abfd25415c8512b937d340ad00178e37bac1da937745afbd79589541"
+    },
+    {
+      "key": "financial-statements/2024q2/num.tsv",
+      "size_bytes": 482341379,
+      "sha256": "b49f88991e0444ad7a4b9b01efa555a2b5b10978996faf96b3c87323d862f276"
+    },
+    {
+      "key": "financial-statements/2024q2/pre.tsv",
+      "size_bytes": 101943158,
+      "sha256": "36cafc4e8fac4c2a4d05d4fc09533a03285d1749876497ae4c7a9803f30d71b4"
+    },
+    {
+      "key": "financial-statements/2024q2/tag.tsv",
+      "size_bytes": 20270400,
+      "sha256": "dab35685ea4a65b57e2f9f5931186566af92aaf0eb8df59c82e8b07139e53e89"
+    },
+    {
+      "key": "financial-statements/2024q3/sub.tsv",
+      "size_bytes": 2024936,
+      "sha256": "db892c40cddbf8a4d47e351e3f580c317d9bbed36c0e7ca2c4a5097d42549843"
+    },
+    {
+      "key": "financial-statements/2024q3/num.tsv",
+      "size_bytes": 498071106,
+      "sha256": "b1a5d85f367e2e78fb12dc69ced5b9c50d4019f5ad33a2ba16ca7ff8a57c3410"
+    },
+    {
+      "key": "financial-statements/2024q3/pre.tsv",
+      "size_bytes": 90473677,
+      "sha256": "827082b3c269654b8f6bf8b332d7a78c32eca9f27bfbc8bb3f32a8e6c17717f3"
+    },
+    {
+      "key": "financial-statements/2024q3/tag.tsv",
+      "size_bytes": 17515493,
+      "sha256": "56592d2bc8b6a0474ff1ec16c4206d90029aa37b33fd7bc4779e8d5cce78e048"
+    },
+    {
+      "key": "financial-statements/2024q4/sub.tsv",
+      "size_bytes": 1961415,
+      "sha256": "3fe6959d8751761a8ae088e7687ffd28ef86bfeee54314c9bd3f374bc39a8791"
+    },
+    {
+      "key": "financial-statements/2024q4/num.tsv",
+      "size_bytes": 527146772,
+      "sha256": "7db50fd666194d39dcec620c0e8057a9adf159174b5aa88becbe2ec5ea9cd3e5"
+    },
+    {
+      "key": "financial-statements/2024q4/pre.tsv",
+      "size_bytes": 90395623,
+      "sha256": "3d541f398ddf2d0b594f1a3259089fcab9cb71c3bba815f6f796bdb919897669"
+    },
+    {
+      "key": "financial-statements/2024q4/tag.tsv",
+      "size_bytes": 17675381,
+      "sha256": "92a1c5ee70e7c2a7201faa4694f0a2c284a353a13491bba733d779703dddb3b9"
+    }
+  ]
+}

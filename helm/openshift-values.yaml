@@ -89,8 +89,9 @@ global:
           request: "250m"
           limit: "500m"
         memory:
-          request: "256Mi"
-          limit: "512Mi"
+          # Full financial file sync exceeded 512Mi in the source container.
+          request: "512Mi"
+          limit: "2Gi"
       replication:
         cpu:
           request: "250m"
@@ -275,6 +276,12 @@ workloadLauncher:
 workloadApiServer:
   enabled: true
   replicaCount: 1
+
+  # This deployment historically had literal 512Mi job limits in its pod
+  # template. Render these explicitly so they match global.workloads.resources.
+  env_vars:
+    JOB_MAIN_CONTAINER_MEMORY_REQUEST: "512Mi"
+    JOB_MAIN_CONTAINER_MEMORY_LIMIT: "2Gi"
 
   podSecurityContext:
     fsGroup: 1000

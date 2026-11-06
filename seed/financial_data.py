@@ -175,13 +175,12 @@ def write_postgres_seed(sub_rows: list[dict], num_rows: list[dict], dest: Path):
         # Insert NUM rows
         for row in num_rows:
             vals = _sql_values([
-                None,  # serial id
                 row.get("adsh"), row.get("tag"), row.get("version"),
                 row.get("coreg"), row.get("ddate"), row.get("qtrs"),
                 row.get("uom"), row.get("value"), row.get("footnote"),
                 row.get("_quarter"),
             ])
-            f.write(f"INSERT INTO num VALUES ({vals});\n")
+            f.write(f"INSERT INTO num VALUES (DEFAULT, {vals});\n")
 
         f.write("\nCOMMIT;\n")
 

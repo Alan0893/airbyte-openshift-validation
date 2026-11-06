@@ -34,7 +34,7 @@ A scenario where an enterprise risk team uses Airbyte to ingest counterparty dat
 |--------|---------|-------------|
 | Google Drive `legal/` | EX-10 commercial agreement exhibits | Airbyte → S3 / object storage |
 | Google Drive `compliance/` | 10-K, 10-Q, 8-K filings | Airbyte → S3 / object storage |
-| S3 `financial-statements/` | Quarterly Financial Statement Data Set ZIPs | Airbyte → S3 / object storage |
+| S3 `financial-statements/` | Extracted quarterly Financial Statement Data Set TSVs | Airbyte → S3 / object storage |
 | PostgreSQL | SUB (submissions) + NUM (financial facts) rows | Airbyte → PostgreSQL |
 
 **RHOAI pipeline stack:**
@@ -174,7 +174,7 @@ Airbyte serves as the data ingestion layer that feeds enterprise data into RHOAI
 ```mermaid
 graph TD
     GDrive["Google Drive<br/>legal/ · compliance/"] -->|Airbyte| LZ["S3 Landing Zone"]
-    S3["S3<br/>financial ZIPs"] -->|Airbyte| LZ
+    S3["S3<br/>financial TSVs"] -->|Airbyte| LZ
     PG["PostgreSQL<br/>SUB + NUM rows"] -->|Airbyte| PGDest["PostgreSQL"]
 
     LZ --> Ray["Ray Data + Docling<br/>parse · chunk · embed"]
