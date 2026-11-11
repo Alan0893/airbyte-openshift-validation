@@ -9,10 +9,10 @@
 
 > Previous-validation note: The sections below are from the previous August
 > 27, 2026 validation baseline and are retained for comparison. The current
-> ai-dev02 validation uses RHOAI 3.5.2 and is summarized in the November 10
+> ai-dev02 validation uses RHOAI 3.5.2 and is summarized in the November 11
 > addendum above.
 
-## Current validation addendum — 2026-11-10
+## Current validation addendum — 2026-11-11
 
 Current environment: OpenShift 4.21.16, RHOAI 3.5.2, Airbyte 2.1.1, and
 namespace `airbyte-validation` on ai-dev02. External AWS S3 is configured for
@@ -45,8 +45,9 @@ Week status:
   answers and citations remain open. The source-change path is now traced
   through retrieval; answer-level tracing remains deferred with OGX/vLLM.
 - Week 4 is deferred until the required RHOAI 3.6/nightly evaluation
-  environment is available. Week 5 reporting and demo packaging are in
-  progress.
+  environment is available. Week 5 is in progress: the validation report,
+  evidence, runbook, and demo query set are complete; final partner handoff
+  and blog/solution-brief packaging remain.
 
 Success-criteria status:
 
@@ -59,8 +60,10 @@ Success-criteria status:
   observed. Deletes were not propagated. A configuration failure was marked
   non-retryable after one attempt; transient runtime retry behavior remains
   open.
-- S5: Partial. The corpus and source manifest work, but the formal
-  AutoRAG/RAGAS JSONL contract is not finalized.
+- S5: Partial. The corpus contains 144 legal files, 400 compliance files, 49
+  derived fact sheets, a source manifest, 593 unique filenames, and 11 stable
+  demo query IDs. The formal AutoRAG/RAGAS JSONL contract and final evaluation
+  package are not finalized.
 - S6: Not complete. Retrieval works, but LLM answers and citations have not
   been validated.
 - S7: Qualified/partial. A Google Drive V1→V2 change was traced through
@@ -99,6 +102,7 @@ Detailed evidence:
 
 - [Four-source Airbyte validation](../docs/evidence/airbyte-four-source-validation.md)
 - [Incremental-sync validation](../docs/evidence/s4-incremental-validation.md)
+- [Corpus-contract validation](../docs/evidence/s5-corpus-validation.md)
 - [Source-change validation](../docs/evidence/s7-source-change-validation.md)
 - [Platform checks](../docs/evidence/platform-checks.md)
 
