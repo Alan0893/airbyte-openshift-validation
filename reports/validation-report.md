@@ -7,9 +7,104 @@
 **Airbyte Version:** 2.1.1 (Helm chart airbyte-v2/airbyte)
 **Namespace:** airbyte-validation
 
+> Previous-validation note: The sections below are from the previous August
+> 27, 2026 validation baseline and are retained for comparison. The current
+> ai-dev02 validation uses RHOAI 3.5.2 and is summarized in the November 10
+> addendum above.
+
+## Current validation addendum — 2026-11-10
+
+Current environment: OpenShift 4.21.16, RHOAI 3.5.2, Airbyte 2.1.1, and
+namespace `airbyte-validation` on ai-dev02. External AWS S3 is configured for
+Airbyte state/workload storage and the EDGAR RAG seed corpus. Milvus, Ray,
+PostgreSQL, the four Airbyte source paths, and the source manifest are
+operational.
+
+Agreed scope decisions: OGX/vLLM, Pipeline Server, and AutoRAG/EvalHub are
+deferred because they are not required for the current validation stage.
+ResourceQuota, LimitRange, and larger-load testing are also deferred because
+the current dataset is intentionally limited.
+
+Owner disposition: Ramesh advised documenting the observed Airbyte chart and
+deployment limitations and discussing them with the Airbyte partner. No local
+remediation is required for this reference validation.
+
+Week status:
+
+- Week 1 is qualified complete for the agreed scope. Core cluster, storage,
+  database, vector-store, seed-data, and source-access requirements are
+  operational. Deferred components and platform exceptions are tracked below.
+- Week 1–2 is functionally complete. Airbyte is installed and all four
+  connections are configured, scheduled, and syncing, with qualified P1–P7
+  platform exceptions.
+- Week 2–3 is partially complete. Scheduled syncs and reconciliation passed;
+  incremental behavior is a qualified/partial result.
+- Week 3 is complete for this validation scope. The unattended sync window,
+  restart-mid-sync recovery, and same-version chart-upgrade tests passed.
+- Week 3–4 is complete for corpus preparation, indexing, and retrieval. LLM
+  answers and citations remain open. The source-change path is now traced
+  through retrieval; answer-level tracing remains deferred with OGX/vLLM.
+- Week 4 is deferred until the required RHOAI 3.6/nightly evaluation
+  environment is available. Week 5 reporting and demo packaging are in
+  progress.
+
+Success-criteria status:
+
+- S1: Qualified pass. Installation and least-privilege evidence are recorded.
+- S2: Pass. Twelve scheduled runs across November 7–9 succeeded with no
+  retryable failures.
+- S3: Pass. Google Drive, S3, and PostgreSQL data were reconciled against
+  their sources.
+- S4: Qualified/partial. Inserts, updates, and file no-resend behavior were
+  observed. Deletes were not propagated. A configuration failure was marked
+  non-retryable after one attempt; transient runtime retry behavior remains
+  open.
+- S5: Partial. The corpus and source manifest work, but the formal
+  AutoRAG/RAGAS JSONL contract is not finalized.
+- S6: Not complete. Retrieval works, but LLM answers and citations have not
+  been validated.
+- S7: Qualified/partial. A Google Drive V1→V2 change was traced through
+  Airbyte, S3 landing, RAG indexing, Milvus, and later retrieval. The final
+  LLM answer/citation step remains deferred until OGX/vLLM is available.
+- S8: Deferred until the agreed RHOAI 3.6/nightly evaluation environment.
+
+Platform-check status:
+
+- P1: Qualified limitation. External S3 works, but bundled Airbyte PostgreSQL
+  remains enabled; this is documented for partner review.
+- P2: Qualified chart exception. The shipped chart fixes UID 1000 and fsGroup
+  1000; Airbyte runs under `restricted-v2` without an observed permission
+  failure. The chart limitation is documented for partner review.
+- P3: Qualified pass. Check, discovery, and replication-pod SCC/UID evidence
+  is recorded for all four sources, and the scheduled syncs were successful.
+- P4: Qualified RBAC limitation. The project-scoped Airbyte Role is broad and
+  grants access to secrets and pod exec/attach/log subresources. It is
+  documented for platform and partner review.
+- P5: Qualified storage limitation. No hostPath is used and external S3 works,
+  but bundled PostgreSQL and a historical MinIO workload remain. This is
+  documented for partner review.
+- P6: Pass observed. Connector catalog access, image pulls, Google Drive
+  access, and production syncs worked.
+- P7: Qualified security finding. TLS and UI login work, but the unauthenticated
+  Public API behavior requires platform and partner review.
+- P8: Deferred by agreement because the current dataset is intentionally
+  limited.
+- P9: Pass. After an additional untainted CPU worker became available, the
+  workload-launcher recovered from a restart during controlled job 52, which
+  completed with 144 files and 45,693,114 bytes. A same-version Helm upgrade
+  completed as revision 14, and post-upgrade job 53 also succeeded with 144
+  files and 45,693,114 bytes.
+
+Detailed evidence:
+
+- [Four-source Airbyte validation](../docs/evidence/airbyte-four-source-validation.md)
+- [Incremental-sync validation](../docs/evidence/s4-incremental-validation.md)
+- [Source-change validation](../docs/evidence/s7-source-change-validation.md)
+- [Platform checks](../docs/evidence/platform-checks.md)
+
 ---
 
-## Executive Summary
+## Previous validation baseline — Executive Summary
 
 Airbyte 2.1.1 deploys and operates on OpenShift 4.21 alongside Red Hat OpenShift AI 3.4.1 with **one critical blocker** requiring a workaround. All core platform pods run under the `restricted-v2` SCC without requiring elevated privileges. End-to-end data ingestion was validated with 72 rows synced across 3 tables from PostgreSQL source to PostgreSQL destination.
 

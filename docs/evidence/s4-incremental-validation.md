@@ -1,6 +1,6 @@
 # S4 incremental-sync validation
 
-Run date: 2026-11-09 (UTC). Cluster: ai-dev02; namespace:
+Run date: 2026-11-10 (UTC). Cluster: ai-dev02; namespace:
 `airbyte-validation`. Airbyte application: 2.1.1.
 
 ## Scope
@@ -44,9 +44,10 @@ full S4 requirement:
 - Delete propagation: **not supported by this `incremental_append` test**.
 - Rename behavior: **not tested**. Rename semantics apply to file sources and
   need a separate file-connector test.
-- Retry behavior: **not tested as part of this isolated connection**. Existing
-  financial-file recovery evidence covers resource-related failed/canceled
-  runs, not an automatic retry assertion.
+- Retry behavior: job 54 tested a disposable invalid PostgreSQL destination.
+  Airbyte failed once with `failureType: config_error` and `retryable: false`;
+  no automatic retry occurred. Transient runtime-failure retry behavior
+  remains untested.
 - File-source setup: the S3 source catalog exposes
   `incremental_append` with `_ab_source_file_last_modified`, but the Airbyte
   2.1.1 Public API rejected the valid connector cursor as a selectable field.
@@ -97,7 +98,11 @@ tests, but S4 is a **qualified/partial result**, not a full pass:
 - Rename was recorded as a new landing object; the old landing object was
   retained.
 - Deletes were not propagated by `incremental_append`.
-- Automatic retry behavior was not tested.
+- A disposable invalid PostgreSQL destination was used for job 54. Airbyte
+  failed after one attempt with `failureType: config_error` and
+  `retryable: false`; no automatic retry was created. This confirms that
+  configuration failures are not retried automatically. A transient runtime
+  failure retry remains untested.
 
 The four production RAG connections remain unchanged and continue to use
 full-refresh overwrite.

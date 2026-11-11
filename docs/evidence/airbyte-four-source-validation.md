@@ -1,6 +1,6 @@
 # Four-source Airbyte landing validation
 
-Run date: 2026-11-06 (UTC). Cluster: ai-dev02; namespace:
+Run date: 2026-11-10 (UTC; original landing evidence from November 6). Cluster: ai-dev02; namespace:
 `airbyte-validation`. Airbyte chart and application: 2.1.1.
 
 ## Connections and observed syncs
@@ -24,12 +24,7 @@ generation is
 The one-file pilot, job 15, also matched its source hash. Connection runs
 daily at 18:00 UTC.
 
-The Drive landing inventory has a 144-file legal generation and a 400-file
-compliance generation under `airbyte/landing/`. Earlier one-file pilot
-generations also remain there; count only the full generations above.
-The S3 financial landing likewise contains a one-file pilot generation and a
-17-file partial generation left by the OOM run. Consumers must select the
-complete generation until those older objects are deliberately cleaned up.
+Airbyte landing contains complete legal, compliance, and financial generations, along with older pilot/partial generations. Reconciliation used only the complete generations; older objects should be cleaned up or excluded by consumers.
 
 ## Unattended scheduled runs
 
@@ -60,34 +55,19 @@ does not parse TSV columns.
 The checked-in staging helper regenerated the 32-file manifest from the
 original local ZIPs byte-for-byte in `--manifest-only` mode.
 
-The first 32-file run (job 16) was canceled after its source container was
-OOM-killed at the default 512 MiB limit; it left a partial 17-file landing
-generation. A 512 MiB request and 2 GiB limit were applied with Airbyte's
-pinned 2.1.1 Helm chart. Job 17 was canceled before processing because the
-workload launcher still had the old ConfigMap values. After restarting that
-launcher, job 18 was also canceled before processing: its replication pod
-still had a 512 MiB limit. The worker, workload API, and server also needed
-restarts to read their updated environment values. Helm revision 13 explicitly
-sets the workload API's memory environment values. Job 19's replication pod
-was confirmed under `restricted-v2` SCC with a 512 MiB request and 2 GiB
-limit on its orchestrator, source, and destination containers.
+The final 32-file financial sync succeeded after the approved memory settings
+and required Airbyte component restarts were applied. Its replication pod ran
+under `restricted-v2` SCC with a 512 MiB request and 2 GiB limit on the
+orchestrator, source, and destination containers. A later same-version Helm
+upgrade to revision 14 also completed successfully, and post-upgrade legal
+validation job 53 passed with 144 files and 45,693,114 bytes.
 
-## Remaining validation
+## Validation status
 
-- Job 19's `restricted-v2` SCC is recorded above. Capture SCC and UID for the
-next legal, compliance, and PostgreSQL sync pods to complete P3 evidence.
-- All 12 scheduled jobs succeeded across November 7–9, with one successful
-  attempt each; S2 is now a pass for this validation window.
-- The production connections use full-refresh overwrite. An isolated
-  PostgreSQL `incremental_append` test detected an inserted row and a modified
-  row, but re-emitted the current cursor-boundary row on an unchanged run and
-  did not propagate a delete. See
-  [s4-incremental-validation.md](s4-incremental-validation.md). File-source
-  incremental behavior now has an isolated S3 result: unchanged sync emitted
-  zero rows, add/modify each emitted one row, and rename emitted one new row
-  while retaining the old landing object. Delete emitted zero rows and did
-  not remove the old landing object; retry behavior remains open, so S4 is a
-  qualified/partial result rather than a full pass.
-- The Airbyte Public API route accepted requests without an authentication
-token during this run, including connection updates. Classify its access
-control separately from the web UI login check (P7).
+All four scheduled source connections completed successfully and were
+reconciled during the validation window. Incremental behavior remains a
+qualified result; see [s4-incremental-validation.md](s4-incremental-validation.md).
+Platform-check details, including SCC evidence and API access classification,
+are recorded in [platform-checks.md](platform-checks.md). The Google Drive
+source-change trace is recorded in
+[s7-source-change-validation.md](s7-source-change-validation.md).
