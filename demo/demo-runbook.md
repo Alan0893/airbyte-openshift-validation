@@ -5,6 +5,17 @@ This runbook demonstrates the EDGAR RAG path in the `airbyte-validation`
 namespace: S3 seed data → Ray/Docling → embeddings → Milvus →
 metadata-filtered retrieval.
 
+For a demo on the existing validated cluster, show the completed RayJob and
+continue with sections 3 and 4. Sections 1 and 2 are for rebuilding the
+infrastructure or index. A new execution of the checked-in RayJob sets
+`DROP_EXISTING_COLLECTION=true` and replaces the Milvus collection.
+
+```bash
+oc get rayjob edgar-rag-ingest -n airbyte-validation
+oc get raycluster edgar-rag -n airbyte-validation
+oc get pods -n airbyte-validation -l app=milvus
+```
+
 ## Before the demo
 
 - [ ] `oc login` to the target cluster
@@ -20,7 +31,7 @@ oc get secret quay-pull milvus-s3-config edgar-seed-s3 \
   -n airbyte-validation
 ```
 
-## 1. Start the RAG infrastructure
+## 1. Rebuild the RAG infrastructure (when needed)
 
 Apply the Milvus and RayCluster resources:
 
@@ -42,11 +53,14 @@ oc get pods -n airbyte-validation \
   -l 'app in (milvus,milvus-etcd,edgar-rag-head,edgar-rag-worker)'
 ```
 
-## 2. Run ingestion
+## 2. Rebuild the index (when needed)
 
 Submit the RayJob. It reads `drive/` and `factsheets/` from the configured
 S3 prefix, parses HTML and Markdown with Docling, embeds the chunks, and
 writes them to the `edgar_filings` Milvus collection.
+
+Only run a new job when the full corpus is staged and you intend to replace
+the current collection. The checked-in job sets `DROP_EXISTING_COLLECTION=true`.
 
 ```bash
 oc apply -f manifests/rag-pipeline/rayjob-edgar-pipeline.yaml
@@ -72,7 +86,7 @@ oc port-forward svc/milvus-milvus 19530:19530 -n airbyte-validation
 Terminal B:
 
 ```bash
-python - <<'PY'
+python3 - <<'PY'
 from pymilvus import MilvusClient
 
 client = MilvusClient(uri="http://localhost:19530")
@@ -88,7 +102,7 @@ contain both filing chunks and fact-sheet chunks.
 Keep the port-forward running and execute the curated query set:
 
 ```bash
-python - <<'PY'
+python3 - <<'PY'
 import json
 
 from pipeline.rag_query import EdgarRAG

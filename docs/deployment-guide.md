@@ -2,6 +2,11 @@
 
 Reference guide for deploying Airbyte 2.1.1 (Helm V2) on OpenShift 4.14+ with restricted-v2 SCC compliance. Validated on OpenShift 4.21.16 alongside Red Hat OpenShift AI 3.4.1.
 
+This guide records the earlier platform installation path. The
+[November 2026 validation report](../reports/validation-report.md) and
+[platform checks](evidence/platform-checks.md) cover the later RHOAI 3.5.2
+deployment and its qualified findings.
+
 ---
 
 ## Prerequisites
@@ -54,7 +59,7 @@ helm repo update airbyte-v2
 
 helm install airbyte airbyte-v2/airbyte \
   --namespace "${NAMESPACE}" \
-  --values openshift-values.yaml \
+  --values helm/openshift-values.yaml \
   --version 2.1.1 \
   --wait --atomic --timeout 10m
 ```

@@ -1,5 +1,10 @@
 # Airbyte on OpenShift AI — Live Demo Script
 
+> Previous August 2026 platform demo. Its RHOAI 3.4.1 results and dashboard are
+> retained for historical comparison. Use the [EDGAR retrieval runbook](demo-runbook.md)
+> and [current validation report](../reports/validation-report.md) for the
+> November 2026 validation.
+
 **Audience:** Red Hat partner engineering stakeholders
 **Duration:** ~15 minutes
 **Cluster:** ai-dev02.kni.syseng.devcluster.openshift.com (re-login if session expired)

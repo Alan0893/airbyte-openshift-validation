@@ -1,6 +1,9 @@
-# RAG Pipeline: Airbyte + OpenShift AI
+# Earlier PostgreSQL retrieval example
 
-Demonstrates end-to-end Retrieval-Augmented Generation using Airbyte-synced data on OpenShift AI (RHOAI).
+This is an illustrative retrieval example from the earlier PostgreSQL sync
+validation. It chunks Airbyte-synced rows, stores embeddings in PostgreSQL,
+and runs similarity search. The current EDGAR pipeline uses S3 input, Ray,
+Docling, and Milvus; see the [pipeline guide](../../pipeline/README.md).
 
 ## Architecture
 

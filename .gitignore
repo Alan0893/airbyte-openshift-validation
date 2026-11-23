@@ -8,3 +8,14 @@ __pycache__/
 # Seed data — large generated files, not committed
 data/seed/
 graphify-out/
+.venv/
+.venv-*/
+.env
+.env.*
+!.env.example
+.aider.tags.cache.v4/
+
+# Filled connector and Kubernetes Secret files; keep only *.example templates.
+examples/airbyte/rag-connectors/*.json
+helm/*-secret.yaml
+manifests/rag-pipeline/*-secret.yaml

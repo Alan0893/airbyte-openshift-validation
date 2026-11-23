@@ -1,5 +1,11 @@
 # Blog Post Brief: Financial Document Intake with Airbyte + OpenShift AI
 
+> Original concept brief from before the November 2026 four-source and RAG
+> validation. Its open questions and evidence inventory describe the earlier
+> platform baseline, not the current results. Use the
+> [validation report](../reports/validation-report.md) and
+> [current evidence](evidence/) for publication claims.
+
 Handoff doc for whoever writes the post. Covers the concept, what this repo can
 actually back up with evidence, and what would need to be built or sourced
 elsewhere.

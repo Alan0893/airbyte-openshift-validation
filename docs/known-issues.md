@@ -2,6 +2,10 @@
 
 Issues discovered during the Airbyte 2.1.1 validation on OpenShift 4.21.16 with RHOAI 3.4.1.
 
+These are previous platform findings. See the
+[current validation report](../reports/validation-report.md) and
+[platform checks](evidence/platform-checks.md) for the November 2026 status.
+
 ---
 
 ## Finding #1: Replication Pod Hardcoded Resources (HIGH)

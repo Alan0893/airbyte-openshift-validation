@@ -28,10 +28,10 @@ The expected 32 TSV keys, sizes, and SHA-256 hashes are recorded in
 Stage the files from the repo root with standard AWS environment credentials:
 
 ```bash
-python -m pip install -r seed/requirements.txt
+python3 -m pip install -r seed/requirements.txt
 export S3_BUCKET=YOUR_BUCKET
 # Set S3_ENDPOINT only for an S3-compatible service outside AWS.
-python scripts/08-stage-financial-tsv.py
+python3 scripts/08-stage-financial-tsv.py
 ```
 
 The staging script streams ZIP members without expanding them onto local

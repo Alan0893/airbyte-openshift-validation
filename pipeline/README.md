@@ -77,14 +77,18 @@ edgar-seed/
 ### Build the Ray image
 
 ```bash
-# From repo root — pin an immutable tag (or digest after push)
-docker build -f pipeline/Dockerfile -t quay.io/<org>/edgar-rag-ray:0.1.0 .
-docker push quay.io/<org>/edgar-rag-ray:0.1.0
+# From the repo root; use a new tag for each build.
+docker build --platform=linux/amd64 -f pipeline/Dockerfile \
+  -t quay.io/<org>/edgar-rag-ray:<tag> .
+docker push quay.io/<org>/edgar-rag-ray:<tag>
 ```
 
-Replace `quay.io/EXAMPLE/edgar-rag-ray:0.1.0` in
-`manifests/rag-pipeline/raycluster.yaml` and
-`manifests/rag-pipeline/rayjob-edgar-pipeline.yaml` with that tag or digest.
+The checked-in RayCluster head, worker, and RayJob submitter use the same
+pinned Quay digest. After pushing a new image, update all three image
+references in `manifests/rag-pipeline/raycluster.yaml` and
+`manifests/rag-pipeline/rayjob-edgar-pipeline.yaml` to its new digest.
+Private Quay images also require the `quay-pull` Secret referenced by the pod
+templates.
 
 ### Generate Fact Sheets
 
@@ -93,9 +97,9 @@ The seed corpus ships the SEC Financial Statement Data Sets as `sub.tsv`
 accession number and renders one Markdown fact sheet per company:
 
 ```bash
-python -m pipeline.factsheet                        # all companies
-python -m pipeline.factsheet --ticker AAPL          # one company
-python -m pipeline.factsheet --ticker AAPL --year 2023
+python3 -m pipeline.factsheet                        # all companies
+python3 -m pipeline.factsheet --ticker AAPL          # one company
+python3 -m pipeline.factsheet --ticker AAPL --year 2023
 ```
 
 Output lands in `data/seed/factsheets/<TICKER>_<CIK>.md` (49 sheets from the
@@ -138,7 +142,7 @@ export S3_ADDRESSING_STYLE=path # recommended for S3-compatible endpoints
 export S3_BUCKET=...
 export S3_PREFIX=edgar-seed
 
-python -m pipeline.smoke_s3_input
+python3 -m pipeline.smoke_s3_input
 ```
 
 ### Run the Pipeline
@@ -151,11 +155,11 @@ export MILVUS_PORT=19530
 export INPUT_PATH=data/seed/drive
 export MANIFEST_PATH=data/seed/manifests/seed-manifest.json
 export FACTSHEET_DIR=data/seed/factsheets
-python -m pipeline.edgar_rag_pipeline
+python3 -m pipeline.edgar_rag_pipeline
 
 # S3 mode (same env as smoke test + Milvus)
 export INPUT_SOURCE=s3
-python -m pipeline.edgar_rag_pipeline
+python3 -m pipeline.edgar_rag_pipeline
 ```
 
 ### Configuration

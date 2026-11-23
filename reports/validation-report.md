@@ -10,7 +10,7 @@
 > Previous-validation note: The sections below are from the previous August
 > 27, 2026 validation baseline and are retained for comparison. The current
 > ai-dev02 validation uses RHOAI 3.5.2 and is summarized in the November 11
-> addendum above.
+> addendum below.
 
 ## Current validation addendum — 2026-11-11
 
@@ -57,9 +57,10 @@ Success-criteria status:
 - S3: Pass. Google Drive, S3, and PostgreSQL data were reconciled against
   their sources.
 - S4: Qualified/partial. Inserts, updates, and file no-resend behavior were
-  observed. Deletes were not propagated. A configuration failure was marked
-  non-retryable after one attempt; transient runtime retry behavior remains
-  open.
+  observed. Incremental S3 deletes and renames left older landing objects;
+  PostgreSQL full-refresh overwrite removed a deleted row. A configuration
+  failure was marked non-retryable after one attempt; transient runtime retry
+  behavior remains open.
 - S5: Partial. The corpus contains 144 legal files, 400 compliance files, 49
   derived fact sheets, a source manifest, 593 unique filenames, and 11 stable
   demo query IDs. The formal AutoRAG/RAGAS JSONL contract and final evaluation

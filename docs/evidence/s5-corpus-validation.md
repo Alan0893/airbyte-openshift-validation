@@ -16,7 +16,8 @@ edgar-seed/
   manifests/seed-manifest.json
 ```
 
-The checked-in source layout is the same under `data/seed/`.
+The locally generated source layout is the same under `data/seed/`, which is
+ignored by Git.
 
 - Legal filings: 144 HTML files.
 - Compliance filings: 400 HTML files.
